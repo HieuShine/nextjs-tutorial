@@ -18,6 +18,9 @@
     --foreground: #ededed;
   }
 }
+@tailwind base;
+@tailwind components
+@taiwind utilities
 
 body {
   background: var(--background);

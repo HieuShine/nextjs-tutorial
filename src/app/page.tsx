@@ -1,35 +1,61 @@
 'use client';
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 import StudentCard from "./Components/StudentCard";
-export default function Home() {
-  const [students, setStudent] = useState([
-    { id: 1, name: 'Nguyễn Văn A', age: 20 },
-    { id: 2, name: 'Nguyễn Văn B', age: 21 },
-  ]);
+import StudentForm from "./Components/StudentForm";
 
+export default function Home() {
+  const [students, setStudent] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
 
   //state để lưu dữ liệu form
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [edittingId, setEditingId] = useState<number | null>(null);
 
+
+  //UseEfect  get student rom localStorage
+  // useEffect(() => {
+  //   const savedStudents = localStorage.getItem('students');
+  //   if (savedStudents) {
+  //     setStudent(JSON.parse(savedStudents));
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   localStorage.setItem('students', JSON.stringify(students));
+  // }, [students]);
+
+  //useEfect get student from API
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        console.log('start')
+        const response = await fetch('https://jsonplaceholder.typicode.com/users');
+        console.log('response: ', response)
+        const data = await response.json();
+        console.log('data:', data);
+
+        //chuyển dât API thành dạng props Student
+        const studentList = data.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          age: Math.floor(Math.random() * 10) + 18, //random()
+        }))
+        //set studentlist
+        setStudent(studentList);
+        setLoading(false);
+      }
+      catch (er) {
+        console.log('Lỗi khi call API', er);
+        setLoading(false);
+      }
+    }
+    fetchStudents();
+
+  }, []);
+
+
   //Hàm thêm sinh viên mới
-
-  const handleCreateStudent = () => {
-    if (!name || !age) return alert('Vui lòng nhập đầy đủ tên và tuổi');
-    const newStudent = {
-      id: Date.now(),
-      name,
-      age: Number(age)
-
-    };
-    setStudent([...students, newStudent]);
-    //reset form
-    setName('');
-    setAge('');
-
-  }
   const handleDeleteStudent = (id: number) => {
     setStudent(students.filter(x => x.id !== id));
 
@@ -64,36 +90,45 @@ export default function Home() {
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>Danh sách sinh viên</h1>
-
       {/* Form thêm sinh viên */}
-      <div style={{ marginBottom: '2rem' }}>
-        <input
-          type="text"
-          placeholder="Tên sinh viên"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          style={{ marginRight: '1rem' }}
-        />
-        <input
-          type="number"
-          placeholder="Tuổi"
-          value={age}
-          onChange={e => setAge(e.target.value)}
-          style={{ marginRight: '1rem', width: '80px' }}
-        />
-        <button onClick={handleSaveStudent}>Thêm sinh viên</button>
-      </div>
+      <StudentForm
+        name={name}
+        age={age}
+        onChangeName={setName}
+        onChangeAge={setAge}
+        onSubmit={handleSaveStudent}
+        isEditing={edittingId !== null}
+      />
 
-      {/* Hiển thị danh sách sinh viên */}
-      {students.map(student => (
-        <StudentCard
-          key={student.id}
-          name={student.name}
-          age={student.age}
-          onDelete={() => handleDeleteStudent(student.id)} onEdit={() => handleEditStudent(student)}
-        />
-      ))}
+      <h1 className="mt-10 mb-4">Danh sách sinh viên (Dữ liệu từ API)</h1>
+
+      {loading ? (
+        <p>Đang tải dữ liệu.....</p>
+      ) : (
+        <table className="table-fixed w-full border border-gray-300 mb-4">
+          <thead>
+            <tr>
+              <th className=" max-w-[20px] text-center">STT</th>
+              <th className="p-2">Tên</th>
+              <th className="p-2">Tuổi</th>
+              <th className="p-2">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* Hiển thị danh sách sinh viên */}
+            {students.map((student, index) => (
+              <StudentCard
+                key={student.id}
+                index={index}
+                student={student}
+                onEdit={() => handleEditStudent(student)}
+                onDelete={() => handleDeleteStudent(student.id)}
+              />
+            ))}
+          </tbody>
+        </table>
+      )}
+
     </div>
   );
 }
