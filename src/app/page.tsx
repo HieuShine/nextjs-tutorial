@@ -1,103 +1,99 @@
-import Image from "next/image";
+'use client';
+import { useState } from "react";
 
+import StudentCard from "./Components/StudentCard";
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [students, setStudent] = useState([
+    { id: 1, name: 'Nguyễn Văn A', age: 20 },
+    { id: 2, name: 'Nguyễn Văn B', age: 21 },
+  ]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+  //state để lưu dữ liệu form
+  const [name, setName] = useState('');
+  const [age, setAge] = useState('');
+  const [edittingId, setEditingId] = useState<number | null>(null);
+
+  //Hàm thêm sinh viên mới
+
+  const handleCreateStudent = () => {
+    if (!name || !age) return alert('Vui lòng nhập đầy đủ tên và tuổi');
+    const newStudent = {
+      id: Date.now(),
+      name,
+      age: Number(age)
+
+    };
+    setStudent([...students, newStudent]);
+    //reset form
+    setName('');
+    setAge('');
+
+  }
+  const handleDeleteStudent = (id: number) => {
+    setStudent(students.filter(x => x.id !== id));
+
+  };
+
+  const handleSaveStudent = () => {
+    console.log('editingId:', edittingId);
+    if (!name || !age) return alert('Vui lòng nhập đầy đủ tên và tuổi');
+    if (edittingId !== null) {
+      const updated = students.map(st => st.id === edittingId ? { ...st, name, age: Number(age) } : st);
+      setStudent(updated);
+      setEditingId(null);
+    } else {
+      const newStudent = {
+        id: Date.now(),
+        name,
+        age: Number(age)
+      };
+      setStudent([...students, newStudent]);
+    }
+    //reset form
+    setName('');
+    setAge('');
+
+  }
+
+  const handleEditStudent = (student: { id: number; name: any; age: any; }) => {
+    setName(student.name);
+    setAge(student.age);
+    setEditingId(student.id)
+  }
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <h1>Danh sách sinh viên</h1>
+
+      {/* Form thêm sinh viên */}
+      <div style={{ marginBottom: '2rem' }}>
+        <input
+          type="text"
+          placeholder="Tên sinh viên"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          style={{ marginRight: '1rem' }}
+        />
+        <input
+          type="number"
+          placeholder="Tuổi"
+          value={age}
+          onChange={e => setAge(e.target.value)}
+          style={{ marginRight: '1rem', width: '80px' }}
+        />
+        <button onClick={handleSaveStudent}>Thêm sinh viên</button>
+      </div>
+
+      {/* Hiển thị danh sách sinh viên */}
+      {students.map(student => (
+        <StudentCard
+          key={student.id}
+          name={student.name}
+          age={student.age}
+          onDelete={() => handleDeleteStudent(student.id)} onEdit={() => handleEditStudent(student)}
+        />
+      ))}
     </div>
   );
 }
